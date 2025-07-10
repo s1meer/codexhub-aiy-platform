@@ -1,53 +1,36 @@
-import React, { useState } from "react";
-import Editor from "@monaco-editor/react";
-import axios from "axios";
-import "./App.css";
+import { useState } from 'react'
+import './App.css'
 
 function App() {
-  const [code, setCode] = useState("// Start building your next-gen app here...");
-  const [prompt, setPrompt] = useState("");
-  const [response, setResponse] = useState("");
+  const [inputValue, setInputValue] = useState('')
+  const [result, setResult] = useState('')
 
-  const askGemini = async () => {
-    try {
-      const res = await axios.post("http://127.0.0.1:5000/api/gemini", { prompt });
-      setResponse(res.data.response || "No response received.");
-    } catch (err) {
-      setResponse("Error: " + err.message);
-    }
-  };
+  const handleSubmit = async () => {
+    const fileContent = inputValue.trim()
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/files/create`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: 'index.js', content: fileContent })
+    })
+
+    const data = await response.json()
+    setResult(data.message || 'Saved')
+  }
 
   return (
-    <div className="container">
-      <header>
-        <h1>🧠 CodexHub AI IDE</h1>
-        <p className="subtitle">Your personal AI-powered development workspace</p>
-      </header>
-
-      <main className="main-section">
-        <div className="editor-box">
-          <Editor
-            height="400px"
-            language="javascript"
-            value={code}
-            onChange={setCode}
-            theme="vs-dark"
-          />
-        </div>
-
-        <div className="ai-box">
-          <textarea
-            rows={4}
-            placeholder="💡 Ask Gemini something..."
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-          />
-          <button onClick={askGemini}>Ask Gemini 🤖</button>
-          <pre className="response-box">{response}</pre>
-        </div>
-      </main>
+    <div style={{ padding: '2rem', color: 'white' }}>
+      <h1>CodexHub AI IDE</h1>
+      <textarea
+        style={{ width: '400px', height: '200px', background: '#1e1e1e', color: 'lime', padding: '10px' }}
+        value={inputValue}
+        onChange={(e) => setInputValue(e.target.value)}
+        placeholder='// Start coding...'
+      />
+      <br /><br />
+      <button onClick={handleSubmit}>Ask Gemini</button>
+      <div style={{ marginTop: '1rem' }}>{result}</div>
     </div>
-  );
+  )
 }
 
-export default App;
+export default App
